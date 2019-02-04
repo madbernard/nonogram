@@ -21,25 +21,65 @@ function createNonogram (size) {
       col++;
     }
 
-    board += row + '\n';
+    board += row + (i < size - 1 ? '\n' : '');
   }
 
   console.log(board);
   return board;
 }
 
-// moreFilledThanHalf is, like .1 if you want 60% of the spaces to be filled in
-function getRandomFiller (moreFilledThanHalf) {
-  return Math.round(Math.random() + moreFilledThanHalf)
+// ///////////////// helper functions ///////////////// //
+
+// biasTowardsFilled is, like .1 if you want 60% of the spaces to be filled in
+// the more empty a nonogram is, the harder it is to solve
+function getRandomFiller (biasTowardsFilled) {
+  return Math.round(Math.random() + biasTowardsFilled)
 }
 
-createNonogram(10);
+function arraySum (arr) {
+  return arr.reduce(function(soFar, now){
+    return soFar + now;
+  });
+}
+
+console.log(arraySum([2,3]));
+
+var given = createNonogram(10);
+
+// ///////////////// knowledge about nonogram ///////////////// //
+
+/*
+  11 12 13
+  21 22 23
+  31 32 33
+  r#c#
+*/
+function getGroupsInfo (nonogram) {
+  var rows = nonogram.split('\n');
+  console.log(rows);
+
+  var cols = rows.forEach(function(eachRow, colNum);{
+    for (var rowNum = 0; rowNum < eachRow.length; rowNum++) {
+      eachRow[colNum];
+    }
+  });
+}
+
+getGroupsInfo(given);
 
 
 
+// ///////////////// solving ///////////////// //
+/*
+  If open space in line === unplaced spaces known... done
+  if any unplaced group length > slop (open space - unplaced spaces known)... know (group - slop) spots in middle of open space... so, like, in an open space of 7, with a group of 5, you know 3 locations
 
 
+  rose
+
+MFOKACDuIpp
 
 
+*/
 
 
