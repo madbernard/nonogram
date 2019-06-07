@@ -5,7 +5,7 @@ solved: need whole line, also each group in line
 so not just [true, 1, 0, 0, 1, 1]
 each line = object?
 groups... group1 = true, group2 = false?
-line = {solved: false, groupsSolved: [true,false], display:[1,0,?,?,?]} ?
+line = {solved: false, groupsSolved: [true,false], display:[1,0,x,x,x]} ?
 */
 
 function createNonogram (size) {
@@ -29,26 +29,82 @@ function createNonogram (size) {
 }
 
 // ///////////////// solving functions ///////////////// //
-// clues should be a tuple array of column clues, then row clues
-// so like [[[3],[1,2],[1],[2,1]], [[4],[1,1],[2],[1,1]]] for the below
 /*
-  1111
-  1001
-  1100
-  0101
+  Clue Object for this:
+    11110
+    00000
+    11010
+    10101
+    11111
+  Looks like:
+    { rowClues: [ [ 4 ], [ 0 ], [ 2, 1 ], [ 1, 1, 1 ], [ 5 ] ],
+      colClues: [ [ 1, 3 ], [ 1, 1, 1 ], [ 1, 2 ], [ 1, 1, 1 ], [ 2 ] ] }
 */
-function solveNonogram (clues) {
+function solveNonogram(clues, size) {
   var picture = '';
   /*
-    basic algo is, clue says that in this line of x long there are groups, y, z, ... .
+    basic algo is, clue says that in this line of length L there are groups, y, z, ... .
     known space is then
       y + z + ... + (length of group array minus 1 (for single space between each group) )
-    take known space, compare to line length, amount line is greater than known is l (for what the groups Lack)
+    take known space, compare to line length, amount that the Length of space is greater than known fillers is Lacking (for what the groups/known fillers Lack)
     place groups on line as if they started at 0, but do not place marks in the first l spaces
-    (this may break down with more groups than 2)
+
+    figure out how many spaces there are, length of spaces (spaces are open areas, any X/wall will create more spaces)
+      ie, split on x
+    figure out what groups could be in what spaces
+    assign known groups to their space
+    re-run the "lacks" algorithm to fill in anything known in this space
   */
   return picture;
 }
+  /*
+    How to represent board on command line?  Most distinct but obvious/easy ascii choices
+    [.....]
+    [..QQ.]
+    [.QQQQ]
+    [QQQ..]
+    [.....]
+
+    Perhaps
+    ' ' (space) for unknown (distinct from wall and fill, same name)
+    '.' (period) for known wall (picture still clear when all filled)
+    'Q' for known filled (takes up space, no confusion of O and 0)
+  */
+
+// run this when you have one space and some groups known to be in it
+function placeInSpace(clueArr, spaceLength) {
+  var knownFill = clueArr.reduce((soFar, now) => soFar + now) + clueArr.length - 1;
+  var lacks = spaceLength - knownFill;
+  var line = '';
+  var empty = '.';
+
+  // say lack is 3, we have clues [2,4]. k = 0, 1; os = 2, 3
+  clueArr.forEach( (clue, idx) => {
+    var known = clue - lacks;
+    var openSpace = Math.min(clue, lacks);
+
+    while (openSpace) {
+      line += empty;
+      --openSpace;
+    }
+
+    while (known > 0) {
+      line += 'Q';
+      --known;
+    }
+    // at i = 0 we have
+
+    // if there's more to come in clues array, add a space
+    line += (clueArr[idx + 1]) ? empty : '';
+  });
+
+  return line.padEnd(spaceLength, empty);
+}
+
+// tests for placeInSpace
+console.log('tests for placeInSpace: [5], 5, expect "QQQQQ"', '|', placeInSpace([5],5), '|');
+console.log('tests for placeInSpace: [2,4], 10, expect "      Q   "', '|', placeInSpace([2,4],10), '|');
+
 
 // ///////////////// helper functions ///////////////// //
 
