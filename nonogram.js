@@ -114,7 +114,7 @@ makeClues(given);
 
 
 */
-function solveNonogram(clues, size) {
+function solveNonogram (clues, size) {
   var picture = '';
   /*
     basic algo is, clue says that in this line of length L there are groups, y, z, ... .
@@ -133,7 +133,7 @@ function solveNonogram(clues, size) {
 }
 
 // run this when you have one open range of space and some groups known to be in it
-function placeInRange(clueArr, openRange) {
+function placeInRange (clueArr, openRange) {
   // the known filled + the spaces between them
   var known = clueArr.reduce((soFar, now) => soFar + now) + clueArr.length - 1;
   var lacks = openRange - known;
@@ -176,12 +176,15 @@ function getRandomFiller (biasTowardsFilled) {
   return ( Math.round(Math.random() + biasTowardsFilled) === 0 ) ? knownWall : knownFill;
 }
 
+
 // ///////////////// API ///////////////// //
 
 // Eventually, nonogram not clientside
-function checkGuess(character, coordinates, nonogram) {
+// coordinates are x, y, so [col, row]
+function checkGuess (character, x, y, nonogram = given) {
+  var rows = nonogram.split('\n');
+  return character === rows[y][x];
+};
 
-  // return char ===
-}
-
-
+console.log('test: top left is wall?',checkGuess(knownWall, 0, 0, given));
+console.log('test: center is wall?',checkGuess(knownWall, 2, 2, given));
