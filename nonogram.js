@@ -1,19 +1,7 @@
-/*
-  How to represent board on command line?  Most distinct but obvious/easy ascii choices
-  [.....]
-  [..QQ.]
-  [.QQQQ]
-  [QQQ..]
-  [.....]
-
-  Perhaps:
-  ' ' (space) for unknown (distinct from wall and fill, same name)
-  '.' (period) for known wall (picture still clear when all filled)
-  'Q' for known filled (takes up space, no confusion of O and 0)
-*/
-var unknown = ' ';
-var knownWall = '.';
-var knownFill = 'Q';
+// Represent board on command line with space-filling characters
+var indicateUnknown = ' ';
+var knownWall = '-';
+var knownFill = 'H';
 
 // make nonogram as a string, so it's easier to get columns?
 function createNonogram (size) {
@@ -117,6 +105,15 @@ makeClues(given);
     { rowClues: [ [ 4 ], [ 0 ], [ 2, 1 ], [ 1, 1, 1 ], [ 5 ] ],
       colClues: [ [ 1, 3 ], [ 1, 1, 1 ], [ 1, 2 ], [ 1, 1, 1 ], [ 2 ] ] }
 */
+/*
+  If open space in line === unplaced spaces known... done
+  if any unplaced group length > slop (open space - unplaced spaces known)... know (group - slop) spots in middle of open space... so, like, in an open space of 7, with a group of 5, you know 3 locations
+
+  object, r1 = {11: 'odds', 12: 'odds', 13: 'odds', solved: false}
+
+
+
+*/
 function solveNonogram(clues, size) {
   var picture = '';
   /*
@@ -135,37 +132,40 @@ function solveNonogram(clues, size) {
   return picture;
 }
 
-// run this when you have one space and some groups known to be in it
-function placeInSpace(clueArr, spaceLength) {
-  var knownFill = clueArr.reduce((soFar, now) => soFar + now) + clueArr.length - 1;
-  var lacks = spaceLength - knownFill;
+// run this when you have one open range of space and some groups known to be in it
+function placeInRange(clueArr, openRange) {
+  // the known filled + the spaces between them
+  var known = clueArr.reduce((soFar, now) => soFar + now) + clueArr.length - 1;
+  var lacks = openRange - known;
   var line = '';
 
-  // say lack is 3, we have clues [2,4]. k = 0, 1; os = 2, 3
+  // say lack is 3, we have clues [2,4]. safeToFill of those two blocks: 0, 1; wiggleRoom = 2, 3
   clueArr.forEach( (clue, idx) => {
-    var known = clue - lacks;
-    var openSpace = Math.min(clue, lacks);
+    var safeToFill = clue - lacks;
+    var wiggleRoom = Math.min(clue, lacks);
 
-    while (openSpace) {
-      line += unknown;
-      --openSpace;
+    // fill in unknowns in the start of the line places that could have fill or could not
+    while (wiggleRoom) {
+      line += indicateUnknown;
+      --wiggleRoom;
     }
 
-    while (known > 0) {
+    // fill in knownFill in places that will have fill, no matter how much sliding around happens
+    while (safeToFill > 0) {
       line += knownFill;
-      --known;
+      --safeToFill;
     }
 
     // if there's more to come in clues array, add a space
-    line += (clueArr[idx + 1]) ? unknown : '';
+    line += (clueArr[idx + 1]) ? indicateUnknown : '';
   });
 
-  return line.padEnd(spaceLength, unknown);
+  return line.padEnd(openRange, indicateUnknown);
 }
 
-// tests for placeInSpace
-console.log('tests for placeInSpace: [5], 5, expect "QQQQQ"', placeInSpace([5],5));
-console.log('tests for placeInSpace: [2,4], 10, expect "      Q   "', placeInSpace([2,4],10));
+// tests for placeInRange
+console.log('tests for placeInRange: [5], 5, expect "HHHHH"', placeInRange([5],5));
+console.log('tests for placeInRange: [2,4], 10, expect "      H   "', placeInRange([2,4],10));
 
 
 // ///////////////// helper functions ///////////////// //
@@ -176,15 +176,12 @@ function getRandomFiller (biasTowardsFilled) {
   return ( Math.round(Math.random() + biasTowardsFilled) === 0 ) ? knownWall : knownFill;
 }
 
-// ///////////////// solving ///////////////// //
-/*
-  If open space in line === unplaced spaces known... done
-  if any unplaced group length > slop (open space - unplaced spaces known)... know (group - slop) spots in middle of open space... so, like, in an open space of 7, with a group of 5, you know 3 locations
+// ///////////////// API ///////////////// //
 
-  object, r1 = {11: 'odds', 12: 'odds', 13: 'odds', solved: false}
+// Eventually, nonogram not clientside
+function checkGuess(character, coordinates, nonogram) {
 
-
-
-*/
+  // return char ===
+}
 
 
